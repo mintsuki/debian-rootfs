@@ -28,7 +28,7 @@ jobs:
   build:
     strategy:
       matrix:
-        target_arch: [armhf, arm64, amd64, i386, riscv64, ppc64el]
+        target_arch: [armhf, arm64, amd64, i386, ppc64el]
 
     name: Build and upload artifacts
     needs: snapshot-date
