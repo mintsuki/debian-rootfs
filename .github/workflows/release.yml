@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: apt-get update -y && apt-get install debootstrap git -y
+        run: apt-get update -y && apt-get install debootstrap git xz -y
 
       - name: Checkout code
         uses: actions/checkout@v4
