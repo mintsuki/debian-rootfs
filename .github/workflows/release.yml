@@ -46,7 +46,7 @@ jobs:
         run: echo "snapshot_date=$(cat snapshot-date/snapshot-date)" >> $GITHUB_ENV
 
       - name: Run debootstrap
-        run: mkdir -p debian-rootfs && debootstrap --arch=${{matrix.target_arch}} --foreign sid ./debian-rootfs https://snapshot.debian.org/archive/debian/${{ env.snapshot_date }}/
+        run: mkdir -p debian-rootfs && debootstrap --arch=${{matrix.target_arch}} --foreign sid ./debian-rootfs http://snapshot.debian.org/archive/debian/${{ env.snapshot_date }}/
 
       - name: Package tarball
         run: tar -Jcvf debian-rootfs-${{ env.snapshot_date }}-${{matrix.target_arch}}.tar.xz debian-rootfs
