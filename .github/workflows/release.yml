@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        target_arch: [armhf, arm64, amd64, i386, riscv64, powerpc, ppc64el]
+        target_arch: [armhf, arm64, amd64, i386, riscv64, ppc64el]
 
     name: Build and upload artifacts
     runs-on: ubuntu-latest
