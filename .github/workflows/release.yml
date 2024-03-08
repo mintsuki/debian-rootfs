@@ -28,7 +28,7 @@ jobs:
   build:
     strategy:
       matrix:
-        target_arch: [armhf, arm64, amd64, i386, ppc64el]
+        target_arch: [armel, armhf, arm64, amd64, i386, mips64el, ppc64el, s390x]
 
     name: Build and upload artifacts
     needs: snapshot-date
@@ -47,6 +47,9 @@ jobs:
 
       - name: Run debootstrap
         run: mkdir -p debian-rootfs && debootstrap --arch=${{matrix.target_arch}} --foreign testing ./debian-rootfs http://snapshot.debian.org/archive/debian/${{ env.snapshot_date }}/
+
+      - name: Remove /dev contents
+        run: rm -rf debian-rootfs/dev/*
 
       - name: Package tarball
         run: tar -Jcvf debian-rootfs-${{ env.snapshot_date }}-${{matrix.target_arch}}.tar.xz debian-rootfs
