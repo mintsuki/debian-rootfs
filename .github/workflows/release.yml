@@ -72,6 +72,6 @@ jobs:
         with:
           tag_name: rootfs-${{ env.build_date }}
           files: |
-            debian-rootfs-*.tar.xz
+            debian-rootfs-*/debian-rootfs-*.tar.xz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
