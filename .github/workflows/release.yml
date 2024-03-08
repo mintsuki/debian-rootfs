@@ -17,7 +17,7 @@ jobs:
         run: apt-get update -y && apt-get install wget -y
 
       - name: Get snapshot date
-        run: echo "$(wget -qO- https://snapshot.debian.org/archive/debian/$(date '+%Y%m%d')T000000Z/ | grep 'debian:/' | sed 's|            <title>debian:/ ||g;s| - snapshot.debian.org</title>||g;s/-//g;s/://g;s/ /T/g')Z" > snapshot_date
+        run: echo "$(wget -qO- https://snapshot.debian.org/archive/debian/$(date '+%Y%m%d')T000000Z/ | grep 'debian:/' | sed 's|            <title>debian:/ ||g;s| - snapshot.debian.org</title>||g;s/-//g;s/://g;s/ /T/g')Z" > snapshot-date
 
       - name: Upload snapshot date
         uses: actions/upload-artifact@v4
