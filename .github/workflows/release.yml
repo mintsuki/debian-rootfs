@@ -8,6 +8,10 @@ on: [push]
 
 jobs:
   build:
+    strategy:
+      matrix:
+        target_arch: [armhf, arm64, amd64, i386, riscv64, powerpc, ppc64el]
+
     name: Build and upload artifacts
     runs-on: ubuntu-latest
     container: debian:latest
@@ -25,7 +29,7 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Run debootstrap
-        run: mkdir -p debian-rootfs && debootstrap sid ./debian-rootfs https://cdimage.debian.org/debian
+        run: mkdir -p debian-rootfs && debootstrap --arch=${{matrix.target_arch}} --foreign sid ./debian-rootfs http://deb.debian.org/debian
 
       - name: Package tarball
         run: tar -Jcvf debian-rootfs-$(date +'%Y%m%d').tar.xz debian-rootfs
@@ -36,7 +40,7 @@ jobs:
           git config user.email 'mintsuki@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/mintsuki/debian-rootfs.git
           git fetch --all
-          git commit --allow-empty -m "Debian rootfs $(date +'%Y%m%d')"
+          git commit --allow-empty -m "Debian rootfs $(date +'%Y%m%d') [ci skip]"
           git push origin trunk
           git tag rootfs-$(date +'%Y%m%d')
           git push origin trunk --tags
