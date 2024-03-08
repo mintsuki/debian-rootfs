@@ -32,7 +32,26 @@ jobs:
         run: mkdir -p debian-rootfs && debootstrap --arch=${{matrix.target_arch}} --foreign sid ./debian-rootfs http://deb.debian.org/debian
 
       - name: Package tarball
-        run: tar -Jcvf debian-rootfs-$(date +'%Y%m%d').tar.xz debian-rootfs
+        run: tar -Jcvf debian-rootfs-$(date +'%Y%m%d')-${{matrix.target_arch}}.tar.xz debian-rootfs
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: debian-rootfs-${{matrix.target_arch}}
+          path: debian-rootfs-*.tar.xz
+
+  upload:
+    name: Upload artifacts
+    needs: build
+    runs-on: ubuntu-latest
+    container: debian:latest
+
+    steps:
+      - name: Install dependencies
+        run: apt-get update -y && apt-get install debootstrap git xz-utils -y
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
 
       - name: Create release tag
         run: |
@@ -45,9 +64,13 @@ jobs:
           git tag rootfs-$(date +'%Y%m%d')
           git push origin trunk --tags
 
+      - name: Get date
+        run: echo "build_date=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: rootfs-${{ env.build_date }}
           files: |
             debian-rootfs-*.tar.xz
         env:
