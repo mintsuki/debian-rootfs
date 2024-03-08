@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name 'mintsuki'
           git config user.email 'mintsuki@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/limine-bootloader/limine.git
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/mintsuki/debian-rootfs.git
           git fetch --all
           git commit --allow-empty -m "Debian rootfs $(date +'%Y%m%d')"
           git push origin trunk
