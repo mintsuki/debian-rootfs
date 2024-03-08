@@ -1,0 +1,50 @@
+name: Weekly debian rootfs generator
+
+#on:
+#  schedule:
+#    - cron: '0 0 * * 0'
+
+on: [push]
+
+jobs:
+  build:
+    name: Build and upload artifacts
+    runs-on: ubuntu-latest
+    container: debian:latest
+
+    steps:
+      - name: Install dependencies
+        run: apt-get update -y && apt-get install debootstrap git -y
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+
+      - name: Git config
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Run debootstrap
+        run: mkdir -p debian-rootfs && debootstrap sid ./debian-rootfs https://cdimage.debian.org/debian
+
+      - name: Package tarball
+        run: tar -Jcvf debian-rootfs-$(date +'%Y%m%d').tar.xz debian-rootfs
+
+      - name: Create release tag
+        run: |
+          git config user.name 'mintsuki'
+          git config user.email 'mintsuki@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/limine-bootloader/limine.git
+          git fetch --all
+          git commit --allow-empty -m "Debian rootfs $(date +'%Y%m%d')"
+          git push origin trunk
+          git tag rootfs-$(date +'%Y%m%d')
+          git push origin trunk --tags
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            debian-rootfs-*.tar.xz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
