@@ -7,24 +7,52 @@ name: Weekly debian rootfs generator
 on: [push]
 
 jobs:
+  snapshot-date:
+    name: Get snapshot date
+    runs-on: ubuntu-latest
+    container: debian:latest
+
+    steps:
+      - name: Install dependencies
+        run: apt-get update -y && apt-get install wget -y
+
+      - name: Get snapshot date
+        run: echo "$(wget -qO- https://snapshot.debian.org/archive/debian/$(date '+%Y%m%d')T000000Z/ | grep 'debian:/' | sed 's|            <title>debian:/ ||g;s| - snapshot.debian.org</title>||g;s/-//g;s/://g;s/ /T/g')Z" > snapshot_date
+
+      - name: Upload snapshot date
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-date
+          path: snapshot-date
+
   build:
     strategy:
       matrix:
         target_arch: [armhf, arm64, amd64, i386, riscv64, ppc64el]
 
     name: Build and upload artifacts
+    needs: snapshot-date
     runs-on: ubuntu-latest
     container: debian:latest
 
     steps:
       - name: Install dependencies
-        run: apt-get update -y && apt-get install debootstrap git xz-utils -y
+        run: apt-get update -y && apt-get install debootstrap xz-utils -y
+
+      - name: Download snapshot-date
+        uses: actions/download-artifact@v4
+        with:
+          name: snapshot-date
+          path: snapshot-date
+
+      - name: Get snapshot date
+        run: echo "snapshot_date=$(cat snapshot-date)" >> $GITHUB_ENV
 
       - name: Run debootstrap
-        run: mkdir -p debian-rootfs && debootstrap --arch=${{matrix.target_arch}} --foreign sid ./debian-rootfs http://deb.debian.org/debian
+        run: mkdir -p debian-rootfs && debootstrap --arch=${{matrix.target_arch}} --foreign sid ./debian-rootfs https://snapshot.debian.org/archive/debian/${{ env.snapshot_date }}/
 
       - name: Package tarball
-        run: tar -Jcvf debian-rootfs-$(date +'%Y%m%d')-${{matrix.target_arch}}.tar.xz debian-rootfs
+        run: tar -Jcvf debian-rootfs-${{ env.snapshot_date }}-${{matrix.target_arch}}.tar.xz debian-rootfs
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -40,7 +68,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: apt-get update -y && apt-get install debootstrap git xz-utils -y
+        run: apt-get update -y && apt-get install git -y
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -52,6 +80,12 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
+        with:
+          name: snapshot-date
+          path: snapshot-date
+
+      - name: Get snapshot date
+        run: echo "snapshot_date=$(cat snapshot-date)" >> $GITHUB_ENV
 
       - name: Create release tag
         run: |
@@ -59,18 +93,18 @@ jobs:
           git config user.email 'mintsuki@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/mintsuki/debian-rootfs.git
           git fetch --all
-          git commit --allow-empty -m "Debian rootfs $(date +'%Y%m%d') [ci skip]"
+          git commit --allow-empty -m "Debian rootfs "${{ env.snapshot_date }}" [ci skip]"
           git push origin trunk
-          git tag rootfs-$(date +'%Y%m%d')
+          git tag rootfs-${{ env.snapshot_date }}
           git push origin trunk --tags
 
-      - name: Get date
-        run: echo "build_date=$(date +'%Y%m%d')" >> $GITHUB_ENV
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: rootfs-${{ env.build_date }}
+          tag_name: rootfs-${{ env.snapshot_date }}
           files: |
             debian-rootfs-*/debian-rootfs-*.tar.xz
         env:
