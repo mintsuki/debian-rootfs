@@ -41,12 +41,9 @@ jobs:
 
       - name: Download snapshot-date
         uses: actions/download-artifact@v4
-        with:
-          name: snapshot-date
-          path: snapshot-date
 
       - name: Get snapshot date
-        run: echo "snapshot_date=$(cat snapshot-date)" >> $GITHUB_ENV
+        run: echo "snapshot_date=$(cat snapshot-date/snapshot-date)" >> $GITHUB_ENV
 
       - name: Run debootstrap
         run: mkdir -p debian-rootfs && debootstrap --arch=${{matrix.target_arch}} --foreign sid ./debian-rootfs https://snapshot.debian.org/archive/debian/${{ env.snapshot_date }}/
@@ -80,12 +77,9 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
-        with:
-          name: snapshot-date
-          path: snapshot-date
 
       - name: Get snapshot date
-        run: echo "snapshot_date=$(cat snapshot-date)" >> $GITHUB_ENV
+        run: echo "snapshot_date=$(cat snapshot-date/snapshot-date)" >> $GITHUB_ENV
 
       - name: Create release tag
         run: |
@@ -97,9 +91,6 @@ jobs:
           git push origin trunk
           git tag rootfs-${{ env.snapshot_date }}
           git push origin trunk --tags
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
 
       - name: Release
         uses: softprops/action-gh-release@v1
