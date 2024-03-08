@@ -20,14 +20,6 @@ jobs:
       - name: Install dependencies
         run: apt-get update -y && apt-get install debootstrap git xz-utils -y
 
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: '0'
-
-      - name: Git config
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
       - name: Run debootstrap
         run: mkdir -p debian-rootfs && debootstrap --arch=${{matrix.target_arch}} --foreign sid ./debian-rootfs http://deb.debian.org/debian
 
@@ -49,6 +41,14 @@ jobs:
     steps:
       - name: Install dependencies
         run: apt-get update -y && apt-get install debootstrap git xz-utils -y
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+
+      - name: Git config
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
