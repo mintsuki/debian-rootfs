@@ -35,6 +35,6 @@ esac
 
 sudo bsdtar -Jcf debian-rootfs-$1.tar.xz debian-rootfs-$1
 
-sudo chown $(id -u):$(id -g) debian-rootfs-$1.tar.gz
+sudo chown $(id -u):$(id -g) debian-rootfs-$1.tar.xz
 
 touch debian-rootfs-$1.done
