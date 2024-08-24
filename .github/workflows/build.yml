@@ -1,0 +1,51 @@
+name: Build Debian rootfs
+
+on: [push]
+
+jobs:
+  debian-rootfs:
+    strategy:
+      matrix:
+        target_arch: [i386, armhf, arm64, amd64, riscv64]
+
+    name: Build Debian rootfs
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+
+    steps:
+      - name: Install dependencies
+        run: pacman --noconfirm -Syu && pacman --needed --noconfirm -S base-devel qemu-user-static qemu-user-static-binfmt debootstrap debian-archive-keyring debian-ports-archive-keyring
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Git config
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Set DEBIAN_SNAPSHOT variable
+        run: echo "DEBIAN_SNAPSHOT=20240823T164440Z" >> $GITHUB_ENV
+
+      - name: Rebuild
+        run: |
+          set -ex
+
+          sudo mkdir debian-rootfs-${{matrix.target_arch}}
+          sudo debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
+          sudo arch-chroot debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
+
+          sudo rm -f debian-rootfs-${{matrix.target_arch}}/dev/{console,full,null,ptmx,random,tty,urandom,zero}
+          sudo bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
+
+      - name: Tag new release
+        run: ( git tag $DEBIAN_SNAPSHOT && git push --tags ) || true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Debian rootfs ${{ env.DEBIAN_SNAPSHOT }}
+          tag_name: ${{ env.DEBIAN_SNAPSHOT }}
+          body: Debian rootfs images for various ISAs based on snapshot ${{ env.DEBIAN_SNAPSHOT }}
+          files: |
+            *.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
