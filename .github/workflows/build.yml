@@ -33,7 +33,9 @@ jobs:
           debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
           rm -f debian-rootfs-${{matrix.target_arch}}/dev/{console,full,null,ptmx,random,tty,urandom,zero}
 
-          arch-chroot -N -u 0:0 debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
+          echo 'root:1000000:1000000000' >>/etc/subuid
+          echo 'root:1000000:1000000000' >>/etc/subgid
+          arch-chroot -N debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
 
           bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
 
