@@ -34,7 +34,7 @@ jobs:
           sudo mkdir debian-rootfs-${{matrix.target_arch}}
           case "${{matrix.target_arch}}" in
               amd64|i386)
-                  sudo debootstrap sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
+                  sudo debootstrap --arch=${{matrix.target_arch}} sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
                   ;;
               *)
                   sudo debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
