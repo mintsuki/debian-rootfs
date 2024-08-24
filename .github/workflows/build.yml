@@ -29,12 +29,14 @@ jobs:
         run: |
           set -ex
 
-          sudo mkdir debian-rootfs-${{matrix.target_arch}}
+          mkdir debian-rootfs-${{matrix.target_arch}}
           sudo debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
-          sudo arch-chroot debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
-
           sudo rm -f debian-rootfs-${{matrix.target_arch}}/dev/{console,full,null,ptmx,random,tty,urandom,zero}
-          sudo bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
+          chown -R $(id -u):$(id -g) debian-rootfs-${{matrix.target_arch}}
+
+          arch-chroot -N debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
+
+          bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
 
       - name: Tag new release
         run: ( git tag $DEBIAN_SNAPSHOT && git push --tags ) || true
