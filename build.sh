@@ -1,5 +1,15 @@
 #! /bin/bash
 
+if [ -z "$1" ]; then
+    echo "Specify an architecture" 1>&2
+    exit 1
+fi
+
+if [ -z "$2" ]; then
+    echo "Specify a snapshot" 1>&2
+    exit 1
+fi
+
 set -ex
 
 sudo mkdir debian-rootfs-$1
@@ -23,6 +33,8 @@ case "$1" in
         ;;
 esac
 
-sudo bsdtar -zcf debian-rootfs-$1.tar.gz debian-rootfs-$1
+sudo bsdtar -Jcf debian-rootfs-$1.tar.xz debian-rootfs-$1
 
 sudo chown $(id -u):$(id -g) debian-rootfs-$1.tar.gz
+
+touch debian-rootfs-$1.done

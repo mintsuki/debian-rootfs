@@ -7,21 +7,16 @@ fi
 
 set -ex
 
-for a in amd64 arm64 armel armhf i386 mips64el ppc64el riscv64 s390x; do
+for a in amd64 arm64 i386 riscv64; do
     xfce4-terminal -x ./build.sh $a $1 &
 done
 
 while :; do
     if \
-        test -f debian-rootfs-amd64.tar.gz && \
-        test -f debian-rootfs-arm64.tar.gz && \
-        test -f debian-rootfs-armel.tar.gz && \
-        test -f debian-rootfs-armhf.tar.gz && \
-        test -f debian-rootfs-i386.tar.gz && \
-        test -f debian-rootfs-mips64el.tar.gz && \
-        test -f debian-rootfs-ppc64el.tar.gz && \
-        test -f debian-rootfs-riscv64.tar.gz && \
-        test -f debian-rootfs-s390x.tar.gz; then break; fi
+        test -f debian-rootfs-amd64.done && \
+        test -f debian-rootfs-arm64.done && \
+        test -f debian-rootfs-i386.done && \
+        test -f debian-rootfs-riscv64.done; then break; fi
     sleep 1
 done
 
@@ -29,4 +24,4 @@ git tag $1
 git push --tags
 gh release create $1 \
     --notes "Debian rootfs from snapshot $1" \
-    ./*.tar.gz
+    ./*.tar.xz
