@@ -46,7 +46,7 @@ jobs:
               amd64|i386)
                   ;;
               *)
-                  sudo arch-chroot debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
+                  ( sudo arch-chroot debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage || sudo cat debian-rootfs-${{matrix.target_arch}}/debootstrap/debootstrap.log ) && false
                   ;;
           esac
 
