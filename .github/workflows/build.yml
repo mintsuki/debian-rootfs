@@ -32,10 +32,16 @@ jobs:
           set -ex
 
           sudo mkdir debian-rootfs-${{matrix.target_arch}}
-          sudo debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
+          if ! [ "${{matrix.target_arch}}" = "amd64" ]; then
+              sudo debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
+          else
+              sudo debootstrap sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
+          fi
           sudo rm -f debian-rootfs-${{matrix.target_arch}}/dev/{console,full,null,ptmx,random,tty,urandom,zero}
 
-          sudo arch-chroot debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
+          if ! [ "${{matrix.target_arch}}" = "amd64" ]; then
+              sudo arch-chroot debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
+          fi
 
           sudo chown -R $(id -u):$(id -g) debian-rootfs-${{matrix.target_arch}}
           bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
