@@ -30,10 +30,10 @@ jobs:
           set -ex
 
           mkdir debian-rootfs-${{matrix.target_arch}}
-          sudo debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
-          sudo rm -f debian-rootfs-${{matrix.target_arch}}/dev/{console,full,null,ptmx,random,tty,urandom,zero}
-          chown -R $(id -u):$(id -g) debian-rootfs-${{matrix.target_arch}}
+          debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
+          rm -f debian-rootfs-${{matrix.target_arch}}/dev/{console,full,null,ptmx,random,tty,urandom,zero}
 
+          echo 'root:0:0' >>/etc/subuid
           arch-chroot -N debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
 
           bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
