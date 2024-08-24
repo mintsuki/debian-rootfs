@@ -32,16 +32,23 @@ jobs:
           set -ex
 
           sudo mkdir debian-rootfs-${{matrix.target_arch}}
-          if ! [ "${{matrix.target_arch}}" = "amd64" ]; then
-              sudo debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
-          else
-              sudo debootstrap sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
-          fi
+          case "${{matrix.target_arch}}" in
+              amd64|i386)
+                  sudo debootstrap sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
+                  ;;
+              *)
+                  sudo debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
+                  ;;
+          esac
           sudo rm -f debian-rootfs-${{matrix.target_arch}}/dev/{console,full,null,ptmx,random,tty,urandom,zero}
 
-          if ! [ "${{matrix.target_arch}}" = "amd64" ]; then
-              sudo arch-chroot debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
-          fi
+          case "${{matrix.target_arch}}" in
+              amd64|i386)
+                  ;;
+              *)
+                  sudo arch-chroot debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
+                  ;;
+          esac
 
           sudo chown -R $(id -u):$(id -g) debian-rootfs-${{matrix.target_arch}}
           bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
