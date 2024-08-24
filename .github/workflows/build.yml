@@ -10,11 +10,10 @@ jobs:
 
     name: Build Debian rootfs
     runs-on: ubuntu-latest
-    container: archlinux:latest
 
     steps:
       - name: Install dependencies
-        run: pacman --noconfirm -Syu && pacman --needed --noconfirm -S base-devel arch-install-scripts git qemu-user-static qemu-user-static-binfmt debootstrap debian-archive-keyring debian-ports-archive-keyring
+        run: sudo apt-get update && sudo apt-get install -y build-essential arch-install-scripts git qemu-user-static binfmt-support debootstrap debian-archive-keyring debian-ports-archive-keyring
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,14 +28,13 @@ jobs:
         run: |
           set -ex
 
-          mkdir debian-rootfs-${{matrix.target_arch}}
-          debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
-          rm -f debian-rootfs-${{matrix.target_arch}}/dev/{console,full,null,ptmx,random,tty,urandom,zero}
+          sudo mkdir debian-rootfs-${{matrix.target_arch}}
+          sudo debootstrap --arch=${{matrix.target_arch}} --foreign sid debian-rootfs-${{matrix.target_arch}} https://snapshot.debian.org/archive/debian/$DEBIAN_SNAPSHOT/
+          sudo rm -f debian-rootfs-${{matrix.target_arch}}/dev/{console,full,null,ptmx,random,tty,urandom,zero}
 
-          echo 'root:1000000:1000000000' >>/etc/subuid
-          echo 'root:1000000:1000000000' >>/etc/subgid
-          arch-chroot -N debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
+          sudo arch-chroot debian-rootfs-${{matrix.target_arch}} /debootstrap/debootstrap --second-stage
 
+          sudo chown -R $(id -u):$(id -g) debian-rootfs-${{matrix.target_arch}}
           bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
 
       - name: Tag new release
