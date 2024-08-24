@@ -50,9 +50,9 @@ jobs:
                   ;;
           esac
 
-          sudo chown -R $(id -u):$(id -g) debian-rootfs-${{matrix.target_arch}}
-          bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
+          sudo bsdtar -zcf debian-rootfs-${{matrix.target_arch}}.tar.gz debian-rootfs-${{matrix.target_arch}}
 
+          sudo chown $(id -u):$(id -g) debian-rootfs-${{matrix.target_arch}}.tar.gz
       - name: Tag new release
         run: ( git tag $DEBIAN_SNAPSHOT && git push --tags ) || true
 
@@ -63,6 +63,6 @@ jobs:
           tag_name: ${{ env.DEBIAN_SNAPSHOT }}
           body: Debian rootfs images for various ISAs based on snapshot ${{ env.DEBIAN_SNAPSHOT }}
           files: |
-            *.tar.gz
+            debian-rootfs-${{matrix.target_arch}}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
