@@ -12,6 +12,7 @@ fi
 
 set -ex
 
+sudo rm -rf debian-rootfs-$1
 sudo mkdir debian-rootfs-$1
 
 case "$1" in

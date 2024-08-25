@@ -7,7 +7,7 @@ fi
 
 set -ex
 
-for a in amd64 arm64 i386 riscv64; do
+for a in amd64 arm64 armel armhf i386 mips64el ppc64el riscv64 s390x; do
     xfce4-terminal -x ./build.sh $a $1 &
 done
 
@@ -15,8 +15,14 @@ while :; do
     if \
         test -f debian-rootfs-amd64.done && \
         test -f debian-rootfs-arm64.done && \
+        test -f debian-rootfs-armel.done && \
+        test -f debian-rootfs-armhf.done && \
+        test -f debian-rootfs-arm64.done && \
         test -f debian-rootfs-i386.done && \
-        test -f debian-rootfs-riscv64.done; then break; fi
+        test -f debian-rootfs-mips64el.done && \
+        test -f debian-rootfs-ppc64el.done && \
+        test -f debian-rootfs-riscv64.done && \
+        test -f debian-rootfs-s390x.done; then break; fi
     sleep 1
 done
 
