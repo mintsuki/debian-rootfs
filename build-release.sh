@@ -5,10 +5,11 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-set -ex
+set -e
 
 for a in amd64 arm64 armel armhf i386 mips64el ppc64el riscv64 s390x; do
-    xfce4-terminal -x ./build.sh $a $1 &
+    ( nohup ./build.sh $a $1 >debian-rootfs-$a.log 2>&1 </dev/null & )
+    ( tail --follow=name debian-rootfs-$a.log </dev/null & )
 done
 
 while :; do
@@ -17,7 +18,6 @@ while :; do
         test -f debian-rootfs-arm64.done && \
         test -f debian-rootfs-armel.done && \
         test -f debian-rootfs-armhf.done && \
-        test -f debian-rootfs-arm64.done && \
         test -f debian-rootfs-i386.done && \
         test -f debian-rootfs-mips64el.done && \
         test -f debian-rootfs-ppc64el.done && \
@@ -25,6 +25,8 @@ while :; do
         test -f debian-rootfs-s390x.done; then break; fi
     sleep 1
 done
+
+rm -f debian-rootfs*.log
 
 git tag $1
 git push --tags
