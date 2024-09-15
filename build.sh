@@ -34,7 +34,7 @@ case "$1" in
         ;;
 esac
 
-sudo bsdtar -Jcf debian-rootfs-$1.tar.xz debian-rootfs-$1
+sudo tar -Jcf debian-rootfs-$1.tar.xz debian-rootfs-$1
 
 sudo chown $(id -u):$(id -g) debian-rootfs-$1.tar.xz
 
