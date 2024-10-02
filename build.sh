@@ -34,6 +34,12 @@ case "$1" in
         ;;
 esac
 
+sudo rm debian-rootfs-$1/etc/resolv.conf
+sudo touch debian-rootfs-$1/etc/resolv.conf
+
+sudo rm debian-rootfs-$1/etc/hostname
+sudo sh -c "echo localhost >debian-rootfs-$1/etc/hostname"
+
 sudo tar -Jcf debian-rootfs-$1.tar.xz debian-rootfs-$1
 
 sudo chown $(id -u):$(id -g) debian-rootfs-$1.tar.xz
